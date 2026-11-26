@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ML Insight Studio: Algorithm Recommender</title>
+<style>
+:root{--bg:#f6f7fc;--card:#fff;--ink:#14172b;--mute:#5c6280;--line:#e2e5f1;--ac:#5b5bf0;--ac2:#14b8a6;--ok:#16a34a;--warn:#d97706;--code:#10132a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1020;--card:#171a31;--ink:#eceefb;--mute:#9aa0c4;--line:#2a2e4e;--ac:#8b8bff;--ac2:#2dd4bf;--ok:#4ade80;--warn:#fbbf24;--code:#0a0c1a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1020;--card:#171a31;--ink:#eceefb;--mute:#9aa0c4;--line:#2a2e4e;--ac:#8b8bff;--ac2:#2dd4bf;--ok:#4ade80;--warn:#fbbf24;--code:#0a0c1a;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.w{max-width:1080px;margin:0 auto;padding:0 18px}
+.logo{font-weight:800;letter-spacing:-.02em;padding:18px 0 0}.logo span{color:var(--ac)}
+header{padding:18px 0 22px}
+h1{font-size:clamp(1.9rem,5vw,2.9rem);line-height:1.12;margin:0 0 8px;letter-spacing:-.03em}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--ac),var(--ac2));-webkit-background-clip:text;background-clip:text;color:transparent}
+header p{margin:0;color:var(--mute);max-width:620px}
+.app{display:grid;grid-template-columns:330px 1fr;gap:16px;align-items:start;padding-bottom:40px}
+@media(max-width:820px){.app{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.form{position:sticky;top:12px}@media(max-width:820px){.form{position:static}}
+label{display:block;font-size:12px;font-weight:700;color:var(--mute);margin:15px 0 6px;text-transform:uppercase;letter-spacing:.06em}label:first-child{margin-top:0}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 auto;padding:8px 10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;cursor:pointer;font:inherit;font-size:14px}
+.seg button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+input[type=range]{width:100%;accent-color:var(--ac)}
+.top{border:2px solid var(--ac);position:relative}
+.badge{font-size:12px;font-weight:700;background:var(--ac2);color:#001;padding:3px 10px;border-radius:99px}
+.th{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.th h2{margin:8px 0 2px;font-size:1.6rem;letter-spacing:-.02em}
+.big{font-size:2.2rem;font-weight:800;color:var(--ac)}
+.bar{height:8px;border-radius:9px;background:var(--line);overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .4s}
+.mute{color:var(--mute);font-size:15px;margin:0}
+ul{list-style:none;padding:0;margin:10px 0}
+li{padding:3px 0 3px 24px;position:relative;font-size:15px}
+li.ok:before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:800}
+li.wr:before{content:"!";position:absolute;left:5px;color:var(--warn);font-weight:800}
+h3{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:18px 0 4px}
+.cw{position:relative}
+pre{background:var(--code);color:#d9defc;border-radius:12px;padding:14px;margin:0;overflow-x:auto;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace}
+.cp{position:absolute;top:8px;right:8px;background:#2a2e4e;color:#fff;border:0;border-radius:8px;padding:4px 10px;font-size:12px;cursor:pointer}
+.alts{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:16px}
+.alt{padding:14px}.alt b{display:block}.alt .p{float:right;color:var(--ac);font-weight:700}
+.alt p{margin:4px 0 0;font-size:14px;color:var(--mute)}
+.note{margin-top:10px;font-size:14px;color:var(--warn)}
+footer{border-top:1px solid var(--line);padding:22px 0;color:var(--mute);font-size:14px;text-align:center}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="logo">ML Insight <span>Studio</span></div>
+<header>
+<h1>Tell us about your data.<br><em>Get the right algorithm.</em></h1>
+<p>Set your inputs on the left. The recommendation, the reasons behind it, a starter code snippet and preprocessing tips update instantly.</p>
+</header>
+
+<div class="app">
+<div class="card form" id="form">
+<label>Problem type</label>
+<div class="seg" data-k="task"><button data-v="clf" class="on">Classification</button><button data-v="reg">Regression</button><button data-v="clu">Clustering</button><button data-v="ano">Anomaly</button></div>
+<label>Data type</label>
+<div class="seg" data-k="type"><button data-v="tab" class="on">Tabular</button><button data-v="img">Images</button><button data-v="txt">Text</button><button data-v="ts">Time series</button></div>
+<label>Number of rows</label>
+<div class="seg" data-k="size"><button data-v="0">&lt; 1k</button><button data-v="1" class="on">1k–10k</button><button data-v="2">10k–1M</button><button data-v="3">&gt; 1M</button></div>
+<label>Number of features</label>
+<div class="seg" data-k="feat"><button data-v="0">&lt; 20</button><button data-v="1" class="on">20–200</button><button data-v="2">&gt; 200</button></div>
+<label>Pattern complexity</label>
+<div class="seg" data-k="cx"><button data-v="1">Simple</button><button data-v="3" class="on">Not sure</button><button data-v="5">Complex</button></div>
+<label>Training speed</label>
+<div class="seg" data-k="speed"><button data-v="0" class="on">Not a concern</button><button data-v="1">Must be fast</button></div>
+<label>Interpretability needed: <span id="iv">3</span>/5</label>
+<input type="range" id="iw" min="1" max="5" value="3">
+<label>My data has…</label>
+<div class="seg" id="iss"><button data-i="ms">Missing values</button><button data-i="ou">Outliers</button><button data-i="im">Imbalanced classes</button><button data-i="ca">Categorical columns</button></div>
+</div>
+<div id="out"></div>
+</div>
+</div>
+<footer><div class="w">ML Insight Studio · A rule-based guide; always validate with cross-validation on your own data.</div></footer>
+
+<script>
+const T={tab:"tab",img:"img",txt:"txt",ts:"ts"};
+const A=[
+{n:"Logistic Regression",k:"clf",d:"tab txt",nl:1,i:5,s:5,l:4,h:3,sp:5,ms:1,ou:2,im:3,ca:2,sc:1,w:"A fast, transparent baseline. Coefficients show each feature’s effect.",c:"from sklearn.linear_model import LogisticRegression\nmodel = LogisticRegression(max_iter=1000, class_weight=\"balanced\")\nmodel.fit(X_train, y_train)"},
+{n:"Ridge Regression",k:"reg",d:"tab ts",nl:1,i:5,s:5,l:4,h:4,sp:5,ms:1,ou:2,im:3,ca:2,sc:1,w:"Linear model with regularisation. Stable, fast and easy to explain.",c:"from sklearn.linear_model import Ridge\nmodel = Ridge(alpha=1.0)\nmodel.fit(X_train, y_train)"},
+{n:"Lasso / Elastic Net",k:"reg",d:"tab",nl:1,i:5,s:5,l:4,h:5,sp:5,ms:1,ou:2,im:3,ca:2,sc:1,w:"Performs feature selection while fitting, ideal for many features.",c:"from sklearn.linear_model import ElasticNetCV\nmodel = ElasticNetCV(l1_ratio=[.2,.5,.8], cv=5)\nmodel.fit(X_train, y_train)"},
+{n:"Decision Tree",k:"clf reg",d:"tab",nl:3,i:5,s:4,l:3,h:3,sp:5,ms:2,ou:5,im:2,ca:3,sc:0,w:"Human-readable rules, but a single tree can overfit.",c:"from sklearn.tree import DecisionTreeClassifier\nmodel = DecisionTreeClassifier(max_depth=5)\nmodel.fit(X_train, y_train)"},
+{n:"Random Forest",k:"clf reg",d:"tab ts",nl:4,i:3,s:4,l:4,h:4,sp:3,ms:2,ou:5,im:3,ca:3,sc:0,w:"Robust all-rounder that needs very little tuning.",c:"from sklearn.ensemble import RandomForestClassifier\nmodel = RandomForestClassifier(n_estimators=300, class_weight=\"balanced\")\nmodel.fit(X_train, y_train)"},
+{n:"Gradient Boosting (XGBoost / LightGBM)",k:"clf reg",d:"tab ts",nl:5,i:2,s:3,l:5,h:4,sp:3,ms:5,ou:4,im:4,ca:4,sc:0,w:"Often the strongest on tabular data. Pair it with SHAP to explain it.",c:"import lightgbm as lgb\nmodel = lgb.LGBMClassifier(n_estimators=400, learning_rate=0.05)\nmodel.fit(X_train, y_train)"},
+{n:"Support Vector Machine",k:"clf reg",d:"tab",nl:4,i:2,s:5,l:1,h:5,sp:2,ms:1,ou:3,im:2,ca:2,sc:1,w:"Excellent on small, high-dimensional data. Slow on huge datasets.",c:"from sklearn.svm import SVC\nmodel = SVC(kernel=\"rbf\", probability=True)\nmodel.fit(X_train, y_train)"},
+{n:"k-Nearest Neighbours",k:"clf reg",d:"tab",nl:3,i:3,s:4,l:1,h:1,sp:3,ms:1,ou:2,im:2,ca:2,sc:1,w:"Simple and intuitive. Prediction slows as data grows.",c:"from sklearn.neighbors import KNeighborsClassifier\nmodel = KNeighborsClassifier(n_neighbors=5)\nmodel.fit(X_train, y_train)"},
+{n:"Naive Bayes",k:"clf",d:"tab txt",nl:2,i:4,s:5,l:5,h:5,sp:5,ms:2,ou:3,im:3,ca:3,sc:0,w:"Extremely fast and strong for text and high-dimensional data.",c:"from sklearn.naive_bayes import MultinomialNB\nmodel = MultinomialNB()\nmodel.fit(X_train_tfidf, y_train)"},
+{n:"Neural Network (MLP)",k:"clf reg",d:"tab",nl:5,i:1,s:1,l:5,h:4,sp:1,ms:1,ou:2,im:3,ca:2,sc:1,w:"Learns very complex patterns when you have plenty of data.",c:"from sklearn.neural_network import MLPClassifier\nmodel = MLPClassifier(hidden_layer_sizes=(128,64), early_stopping=True)\nmodel.fit(X_train, y_train)"},
+{n:"Pretrained CNN (Transfer Learning)",k:"clf reg",d:"img",nl:5,i:1,s:4,l:5,h:5,sp:2,ms:1,ou:3,im:3,ca:2,sc:0,w:"Fine-tune a model like ResNet or EfficientNet. Great with few images.",c:"import torchvision.models as models\nmodel = models.resnet50(weights=\"DEFAULT\")\nmodel.fc = torch.nn.Linear(model.fc.in_features, num_classes)"},
+{n:"CNN from Scratch",k:"clf reg",d:"img",nl:5,i:1,s:1,l:5,h:5,sp:1,ms:1,ou:3,im:3,ca:2,sc:0,w:"Needs a large labelled image set but gives full control.",c:"import torch.nn as nn\nmodel = nn.Sequential(nn.Conv2d(3,32,3), nn.ReLU(), nn.MaxPool2d(2),\n  nn.Flatten(), nn.LazyLinear(num_classes))"},
+{n:"TF-IDF + Linear Model",k:"clf reg",d:"txt",nl:2,i:4,s:5,l:5,h:5,sp:5,ms:1,ou:3,im:3,ca:2,sc:0,w:"A strong, quick baseline for text with readable word weights.",c:"from sklearn.pipeline import make_pipeline\nfrom sklearn.feature_extraction.text import TfidfVectorizer\nmodel = make_pipeline(TfidfVectorizer(ngram_range=(1,2)), LogisticRegression(max_iter=1000))"},
+{n:"Fine-tuned Transformer (BERT)",k:"clf reg",d:"txt",nl:5,i:1,s:3,l:5,h:5,sp:1,ms:1,ou:3,im:3,ca:2,sc:0,w:"State of the art for language understanding. Needs a GPU.",c:"from transformers import AutoModelForSequenceClassification\nmodel = AutoModelForSequenceClassification.from_pretrained(\"bert-base-uncased\", num_labels=n)"},
+{n:"ARIMA / SARIMA",k:"reg",d:"ts",nl:1,i:4,s:5,l:2,h:1,sp:4,ms:1,ou:2,im:3,ca:1,sc:0,w:"Classic forecasting for trend and seasonality in a single series.",c:"from statsmodels.tsa.statespace.sarimax import SARIMAX\nmodel = SARIMAX(y, order=(1,1,1), seasonal_order=(1,1,1,12)).fit()"},
+{n:"LSTM / GRU",k:"reg clf",d:"ts",nl:5,i:1,s:1,l:5,h:4,sp:1,ms:1,ou:2,im:3,ca:2,sc:1,w:"Learns long-range patterns in sequences given lots of data.",c:"import torch.nn as nn\nmodel = nn.LSTM(input_size=n_features, hidden_size=64, num_layers=2, batch_first=True)"},
+{n:"K-Means",k:"clu",d:"tab",nl:1,i:4,s:4,l:5,h:2,sp:5,ms:1,ou:1,im:3,ca:1,sc:1,w:"Fast, scalable clustering with easy-to-describe centroids.",c:"from sklearn.cluster import KMeans\nmodel = KMeans(n_clusters=4, n_init=10)\nlabels = model.fit_predict(X)"},
+{n:"DBSCAN",k:"clu",d:"tab",nl:5,i:3,s:4,l:3,h:2,sp:3,ms:1,ou:5,im:3,ca:1,sc:1,w:"Finds irregular clusters and flags noise without choosing k.",c:"from sklearn.cluster import DBSCAN\nmodel = DBSCAN(eps=0.5, min_samples=5)\nlabels = model.fit_predict(X)"},
+{n:"Gaussian Mixture",k:"clu",d:"tab",nl:3,i:3,s:4,l:3,h:2,sp:4,ms:1,ou:2,im:3,ca:1,sc:1,w:"Soft cluster membership with a probability for each point.",c:"from sklearn.mixture import GaussianMixture\nmodel = GaussianMixture(n_components=4)\nlabels = model.fit_predict(X)"},
+{n:"Hierarchical Clustering",k:"clu",d:"tab",nl:3,i:4,s:5,l:1,h:2,sp:2,ms:1,ou:2,im:3,ca:1,sc:1,w:"Gives a dendrogram so you can pick the cluster count visually.",c:"from sklearn.cluster import AgglomerativeClustering\nmodel = AgglomerativeClustering(n_clusters=4, linkage=\"ward\")\nlabels = model.fit_predict(X)"},
+{n:"Isolation Forest",k:"ano",d:"tab ts",nl:4,i:3,s:4,l:5,h:4,sp:4,ms:2,ou:5,im:5,ca:2,sc:0,w:"Fast, scalable anomaly detection that needs no labels.",c:"from sklearn.ensemble import IsolationForest\nmodel = IsolationForest(contamination=0.02)\nflags = model.fit_predict(X)"},
+{n:"Local Outlier Factor",k:"ano",d:"tab",nl:4,i:3,s:4,l:1,h:2,sp:3,ms:1,ou:4,im:5,ca:1,sc:1,w:"Detects points that are unusual compared with their neighbours.",c:"from sklearn.neighbors import LocalOutlierFactor\nmodel = LocalOutlierFactor(n_neighbors=20)\nflags = model.fit_predict(X)"},
+{n:"One-Class SVM",k:"ano",d:"tab",nl:4,i:2,s:5,l:1,h:4,sp:2,ms:1,ou:2,im:5,ca:1,sc:1,w:"Learns a boundary around normal data. Good for small sets.",c:"from sklearn.svm import OneClassSVM\nmodel = OneClassSVM(nu=0.02)\nflags = model.fit_predict(X)"}
+];
+const S={task:"clf",type:"tab",size:1,feat:1,cx:3,speed:0,iss:{}};
+const TXT={
+ cx:["May be too simple or too complex for your pattern","Matches your pattern complexity"],
+ size:["Struggles at your dataset size","Suits your dataset size"],
+ dim:["Slows or degrades with this many features","Copes well with your number of features"],
+ int:["Hard to interpret (explain it with SHAP or LIME)","Easy to explain to others"],
+ spd:["Slow to train","Trains quickly"],
+ ms:["Needs missing values imputed first","Tolerates missing values"],
+ ou:["Sensitive to outliers","Robust to outliers"],
+ im:["Needs class weights or resampling for imbalance","Copes well with imbalanced classes"],
+ ca:["Needs categorical columns one-hot encoded","Works well with categorical columns"]};
+function score(a,wi){
+ const f=[],sz=S.size,idx=S.feat;
+ f.push(["cx",5-Math.abs(a.nl-S.cx),2]);
+ f.push(["size",(a.s*(3-sz)+a.l*sz)/3,1.5]);
+ f.push(["dim",idx==0?4:idx==1?(4+a.h)/2:a.h,1]);
+ f.push(["int",5-Math.max(0,wi-a.i)*1.25,wi*.4]);
+ f.push(["spd",S.speed?a.sp:4,S.speed?1.5:.4]);
+ if(S.iss.ms)f.push(["ms",a.ms==5?5:a.ms>=2?3.5:1.5,1.2]);
+ if(S.iss.ou)f.push(["ou",a.ou,1.2]);
+ if(S.iss.im&&S.task=="clf")f.push(["im",a.im,1.2]);
+ if(S.iss.ca)f.push(["ca",a.ca,1.2]);
+ let t=0,m=0;f.forEach(x=>{t+=x[1]*x[2];m+=5*x[2]});
+ return {a,p:Math.max(5,Math.min(99,Math.round(t/m*100))),f};
+}
+function run(){
+ const wi=+document.getElementById("iw").value;document.getElementById("iv").textContent=wi;
+ let type=S.type,note="";
+ let pool=A.filter(a=>a.k.split(" ").includes(S.task)&&a.d.split(" ").includes(type));
+ if(!pool.length){type="tab";note="No algorithm in this library works directly on "+({img:"images",txt:"text",ts:"time series"}[S.type])+" for this problem. Extract features or embeddings first, then use these tabular options.";
+  pool=A.filter(a=>a.k.split(" ").includes(S.task)&&a.d.split(" ").includes("tab"));}
+ const r=pool.map(a=>score(a,wi)).sort((x,y)=>y.p-x.p);
+ const b=r[0],a=b.a;
+ const good=b.f.filter(x=>x[1]>=4&&(x[0]!="int"||wi>=3)&&(x[0]!="spd"||S.speed)).sort((x,y)=>y[2]*y[1]-x[2]*x[1]).slice(0,4).map(x=>`<li class="ok">${TXT[x[0]][1]}</li>`);
+ const bad=b.f.filter(x=>x[1]<=2.5&&(x[0]!="spd"||S.speed)).slice(0,3).map(x=>`<li class="wr">${TXT[x[0]][0]}</li>`);
+ const tips=[];
+ if(S.iss.ms&&a.ms<5)tips.push("Impute missing values with SimpleImputer (median for numbers, most frequent for categories).");
+ if(a.sc)tips.push("Standardise features with StandardScaler before fitting.");
+ if(S.iss.ca&&a.ca<4)tips.push("One-hot encode categorical columns (OneHotEncoder).");
+ if(S.iss.ou&&a.ou<3)tips.push("Clip or remove outliers, or use RobustScaler.");
+ if(S.iss.im&&S.task=="clf")tips.push("Use class_weight or SMOTE, and judge the model with F1 or ROC-AUC, not accuracy.");
+ if(S.type=="ts")tips.push("Split by time, never shuffle, and validate with TimeSeriesSplit.");
+ if(S.type=="img")tips.push("Resize images consistently and use data augmentation (flip, crop, rotate).");
+ tips.push({clf:"Evaluate with 5-fold cross-validation using accuracy, precision, recall and F1.",reg:"Evaluate with cross-validation using RMSE, MAE and R².",clu:"Compare cluster counts with the silhouette score.",ano:"If you have a few labelled anomalies, check precision and recall on them."}[S.task]);
+ const alts=r.slice(1,5).map(x=>`<div class="card alt"><span class="p">${x.p}%</span><b>${x.a.n}</b><p>${x.a.w}</p></div>`).join("");
+ document.getElementById("out").innerHTML=`
+ <div class="card top"><span class="badge">RECOMMENDED</span>
+ <div class="th"><h2>${a.n}</h2><div class="big">${b.p}%</div></div>
+ <div class="bar"><i style="width:${b.p}%"></i></div>
+ <p class="mute">${a.w}</p>
+ ${note?`<p class="note">${note}</p>`:""}
+ <h3>Why this fits</h3><ul>${good.join("")||"<li class=ok>Best overall balance for your inputs</li>"}</ul>
+ ${bad.length?`<h3>Watch out for</h3><ul>${bad.join("")}</ul>`:""}
+ <h3>Starter code</h3><div class="cw"><pre id="code"></pre><button class="cp" id="cp">Copy</button></div>
+ <h3>Preprocessing checklist</h3><ul>${tips.map(t=>`<li class="ok">${t}</li>`).join("")}</ul></div>
+ ${alts?`<h3 style="margin-top:22px">Other options to compare</h3><div class="alts" style="margin-top:6px">${alts}</div>`:""}`;
+ document.getElementById("code").textContent=a.c;
+ document.getElementById("cp").onclick=e=>{try{navigator.clipboard.writeText(a.c);e.target.textContent="Copied!";setTimeout(()=>e.target.textContent="Copy",1400)}catch(x){}};
+}
+document.querySelectorAll("#form .seg[data-k]").forEach(g=>g.onclick=e=>{
+ if(e.target.tagName!="BUTTON")return;
+ g.querySelectorAll("button").forEach(b=>b.classList.remove("on"));e.target.classList.add("on");
+ const v=e.target.dataset.v,k=g.dataset.k;S[k]=["size","feat","cx","speed"].includes(k)?+v:v;run();});
+document.getElementById("iss").onclick=e=>{
+ if(e.target.tagName!="BUTTON")return;
+ e.target.classList.toggle("on");S.iss[e.target.dataset.i]=e.target.classList.contains("on");run();};
+document.getElementById("iw").oninput=run;
+run();
+</script>
+</body>
+</html>
